@@ -2,7 +2,12 @@ package CalculDistribue;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 //import java.util.concurrent.TimeUnit;
@@ -21,15 +26,47 @@ public class Master10 {
 		int Sleeping_time = 5000;
 		//Process p;
 		try {
-			//MAPPING
-			BufferedReader br;
-			br = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
+			//SPLITTING THE FILE	
+			System.out.println("SPLITTING !!!");
+			int nb_machines = 0;
+			BufferedReader br = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
+			while (br.readLine() != null) {
+				nb_machines++;
+			}
+			br.close();
+			int nb_lignes = 0;
+			BufferedReader brl = new BufferedReader(new FileReader("/tmp/rnobrega/input.txt"));
+			while (brl.readLine() != null) {
+				nb_lignes++;
+			}
+			brl.close();
+			int q = (nb_lignes+nb_machines-1) / nb_machines;
+			for (int m = 0; m <=nb_machines-1; m++) {
+				FileWriter archivo = new FileWriter("/tmp/rnobrega/splits/S"+m+".txt", true);
+				PrintWriter writerS = new PrintWriter(archivo);
+				int end= (m+1)*q-1;
+				if (end > nb_lignes -1) {
+					end = nb_lignes -1;
+				}
+				for (int i= m*q; i <=end; i++) {
+					if (i > nb_lignes) {
+						break;
+					}else {
+						System.out.println(i);
+						writerS.println(Files.readAllLines(Paths.get("/tmp/rnobrega/input.txt"), StandardCharsets.UTF_8).get(i));
+					}
+				}
+				writerS.close();
+			}
 			ExecutorService executor = Executors.newFixedThreadPool(4);
 			//ExecutorService executor = new ThreadPoolExecutor(4,4, 1000, TimeUnit.SECONDS );
 			int count=0;
 			long tempsM = 0;
 			System.out.println("MAPPING !!!");
-			while ((machine = br.readLine()) != null) {
+			
+			//MAPPING			
+			BufferedReader brM = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
+			while ((machine = brM.readLine()) != null) {
 			    //System.out.println("Mapping   "+machine);
 			    machine="rnobrega@"+machine;
 			    
@@ -55,7 +92,7 @@ public class Master10 {
 	            long endM = System.nanoTime();
 	        	tempsM = tempsM + endM - startM;
 	        }
-			br.close();
+			brM.close();
 			System.out.println("MAP terminé");
 			System.out.println("Mapping time: "+ (tempsM-0)/1000000);	
 	        	
