@@ -3,20 +3,22 @@ package CalculDistribue;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-//import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+//import java.util.concurrent.TimeUnit;
+
+//import java.util.concurrent.ExecutionException;
 //import java.util.concurrent.ThreadPoolExecutor;
 //import java.util.concurrent.Future;
 //import java.util.concurrent.TimeUnit;
 //import java.io.FileNotFoundException;
 //import java.io.InputStreamReader;
-//import java.util.concurrent.TimeUnit;
 
 public class Master10 {
 
 	public static void main(String[] args) throws InterruptedException {
 		String machine;
+		int Sleeping_time = 5000;
 		//Process p;
 		try {
 			//MAPPING
@@ -25,8 +27,10 @@ public class Master10 {
 			ExecutorService executor = Executors.newFixedThreadPool(4);
 			//ExecutorService executor = new ThreadPoolExecutor(4,4, 1000, TimeUnit.SECONDS );
 			int count=0;
+			long tempsM = 0;
+			System.out.println("MAPPING !!!");
 			while ((machine = br.readLine()) != null) {
-			    System.out.println("Mapping   "+machine);
+			    //System.out.println("Mapping   "+machine);
 			    machine="rnobrega@"+machine;
 			    
 			    //Création des dossiers "splits"
@@ -42,61 +46,88 @@ public class Master10 {
 				p = pb_copy_data.start();
 				p.waitFor();
 				
+				//MAPPING
+				long startM = System.nanoTime();
 			    Runnable worker = new Deployer10(machine,String.valueOf(count), "MAP");
 	            executor.execute(worker);
-	            Thread.sleep(10000);
-	            count++;       
-			}
+	            Thread.sleep(Sleeping_time);
+	            count++;    
+	            long endM = System.nanoTime();
+	        	tempsM = tempsM + endM - startM;
+	        }
 			br.close();
 			System.out.println("MAP terminé");
-	        
+			System.out.println("Mapping time: "+ (tempsM-0)/1000000);	
+	        	
 	        //SHUFFLING
 	        BufferedReader br2;
 			br2 = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
 			int countShuf=0;
+			long tempsS =0;
+			System.out.println("SHUFFLING !!!");
 			while ((machine = br2.readLine()) != null) {
-			    System.out.println("shuffling   "+machine);
+			    //System.out.println("shuffling   "+machine);
 			    machine="rnobrega@"+machine;
+			    long startS = System.nanoTime();
 			    Runnable worker = new Deployer10(machine,String.valueOf(countShuf), "SHUFFLE");
 	            executor.execute(worker);
-	            Thread.sleep(10000);
-		        countShuf = countShuf +1;  
+	            Thread.sleep(Sleeping_time);
+		        countShuf++;  
+		        long endS = System.nanoTime();
+	        	tempsS = tempsS + endS - startS;
+	        	
 			}
 			br2.close();
-			//executor.shutdown();
-	        System.out.println("SHUFFLE terminé");
-	        
+			System.out.println("SHUFFLE terminé");
+			System.out.println("Shuffling time: "+ (tempsS-0)/1000000);
+			
 	      //PRE-REDUCING
 	        BufferedReader brPR = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));;
 			int countPRed=0;
+			long tempsP = 0;
+			System.out.println("PREREDUCING !!!");
 			while ((machine = brPR.readLine()) != null) {
-			    System.out.println("Pre-reducing   "+machine);
+			    //System.out.println("Pre-reducing   "+machine);
 			    machine="rnobrega@"+machine;
+			    long startP = System.nanoTime();
 			    Runnable worker = new Deployer10(machine,String.valueOf(countPRed), "PRE-REDUCE");
 	            executor.execute(worker);
-	            Thread.sleep(10000);
-		        countPRed = countPRed +1;  
-			}
+	            Thread.sleep(Sleeping_time);
+		        countPRed++;  
+		        long endP = System.nanoTime();
+	        	tempsP = tempsP + endP - startP;
+	        	
+			}	
 			brPR.close();
-	        
+			System.out.println("PRE-REDUCE terminé");
+			System.out.println("Pre-Reducing time: "+ (tempsP-0)/1000000);
+			
 	      //REDUCING
 	        BufferedReader brR;
 			brR = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
 			int countRed=0;
+			long tempsR = 0;
+			System.out.println("REDUCING !!!");
 			while ((machine = brR.readLine()) != null) {
-			    System.out.println("Reducing   "+machine);
+			    //System.out.println("Reducing   "+machine);
 			    machine="rnobrega@"+machine;
+			    long startR = System.nanoTime();
 			    Runnable worker = new Deployer10(machine,String.valueOf(countRed), "REDUCE");
 	            executor.execute(worker);
-	            Thread.sleep(20000);
-		        countRed = countRed +1;  
-			}
+	            Thread.sleep(Sleeping_time);
+		        countRed++;
+		        long endR = System.nanoTime();
+	        	tempsR = tempsR + endR - startR;
+	        }
 			brR.close();
 			
 	        System.out.println("REDUCE terminé");
-	        Thread.sleep(10000);
+	        System.out.println("Reducing  time: "+ (tempsR-0)/1000000);
+	        System.out.println("Pre + Reducing  time: "+ (tempsP+ tempsR -6000)/1000000);
+	        Thread.sleep(5000);
 	        executor.shutdown();
 	        executor.shutdownNow();
+	        System.out.println("Program terminé");
 	        
 		}catch (IOException e) {
             e.printStackTrace();
