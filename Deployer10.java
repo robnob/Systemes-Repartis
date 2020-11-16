@@ -26,20 +26,20 @@ public class Deployer10 implements Runnable {
 				if (machine.equals("rnobrega@"+name)) {
 					
 					//Copie de "machines.txt" dans toutes les machines du pool
-					String[] copy_mach_cmd = {"scp", "-o StrictHostKeyChecking=no", "-r", "-p", "/tmp/rnobrega/machines.txt",machine+":/tmp/rnobrega/"};
+					String[] copy_mach_cmd = {"scp", "-o StrictHostKeyChecking=no", "-r", "-p", "/cal/homes/rnobrega/syst_rep/machines.txt",machine+":/tmp/rnobrega/"};
 					ProcessBuilder pb_copy_mach = new ProcessBuilder(copy_mach_cmd);
 					pb_copy_mach.redirectErrorStream(true);
 					p = pb_copy_mach.start();
 					p.waitFor();
 					
 					//Copie de "Slave10.jar" dans outes les machines du pool 
-					String[] copy_slave_cmd = {"scp", "-o StrictHostKeyChecking=no", "-r", "-p", "/tmp/rnobrega/Slave10.jar",machine+":/tmp/rnobrega/"};
+					String[] copy_slave_cmd = {"scp", "-o StrictHostKeyChecking=no", "-r", "-p", "/cal/homes/rnobrega/syst_rep/Slave10.jar",machine+":/tmp/rnobrega/"};
 					ProcessBuilder pb_copy_slave = new ProcessBuilder(copy_slave_cmd);
 					pb_copy_slave.redirectErrorStream(true);
 					p = pb_copy_slave.start();
 					p.waitFor();
 					
-					//Application du MAP
+					//Application du MAP (2 arguments pour le .jar)
 					String[] launch_slave_cmd = {"ssh", "-o StrictHostKeyChecking=no", machine, "java","-jar", "/tmp/rnobrega/Slave10.jar", number,
 							"/tmp/rnobrega/splits/S"+String.valueOf(number)+".txt"};
 					ProcessBuilder pb_launch_slave = new ProcessBuilder(launch_slave_cmd);
@@ -54,6 +54,7 @@ public class Deployer10 implements Runnable {
 				BufferedReader br2 = new BufferedReader(new InputStreamReader((p.getInputStream())));
 				String name=br2.readLine();
 				if (machine.equals("rnobrega@"+name)) {
+					//Application de Shuffle avec 4 arguments pour le .jar
 					String[] launch_slave_cmd = {"ssh", "-o StrictHostKeyChecking=no", machine, "java","-jar", "/tmp/rnobrega/Slave10.jar",
 					number,
 					"/tmp/rnobrega/splits/S"+String.valueOf(number)+".txt",

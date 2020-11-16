@@ -28,32 +28,38 @@ public class Master10 {
 		try {
 			//SPLITTING THE FILE	
 			System.out.println("SPLITTING !!!");
+			//Lecture du nombre de machines
 			int nb_machines = 0;
-			BufferedReader br = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
+			BufferedReader br = new BufferedReader(new FileReader("/cal/homes/rnobrega/syst_rep/machines.txt"));
 			while (br.readLine() != null) {
 				nb_machines++;
 			}
 			br.close();
+			//Lecture du nombre de lignes dans le document
 			int nb_lignes = 0;
-			BufferedReader brl = new BufferedReader(new FileReader("/tmp/rnobrega/input.txt"));
+			BufferedReader brl = new BufferedReader(new FileReader("/cal/homes/rnobrega/syst_rep/input.txt"));
 			while (brl.readLine() != null) {
 				nb_lignes++;
 			}
 			brl.close();
+			//Calcul du cociente en entier
 			int q = (nb_lignes+nb_machines-1) / nb_machines;
 			for (int m = 0; m <=nb_machines-1; m++) {
-				FileWriter archivo = new FileWriter("/tmp/rnobrega/splits/S"+m+".txt", true);
+				//Ecriture des fichiers dans la machine local
+				FileWriter archivo = new FileWriter("/cal/homes/rnobrega/syst_rep/splits/S"+m+".txt", true);
 				PrintWriter writerS = new PrintWriter(archivo);
 				int end= (m+1)*q-1;
+				//prévention de l'erreur "index out of range"
 				if (end > nb_lignes -1) {
 					end = nb_lignes -1;
 				}
+				//Lecture et ecriture des lignes dans les splits
 				for (int i= m*q; i <=end; i++) {
 					if (i > nb_lignes) {
 						break;
 					}else {
 						System.out.println(i);
-						writerS.println(Files.readAllLines(Paths.get("/tmp/rnobrega/input.txt"), StandardCharsets.UTF_8).get(i));
+						writerS.println(Files.readAllLines(Paths.get("/cal/homes/rnobrega/syst_rep/input.txt"), StandardCharsets.UTF_8).get(i));
 					}
 				}
 				writerS.close();
@@ -65,7 +71,7 @@ public class Master10 {
 			System.out.println("MAPPING !!!");
 			
 			//MAPPING			
-			BufferedReader brM = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
+			BufferedReader brM = new BufferedReader(new FileReader("/cal/homes/rnobrega/syst_rep/machines.txt"));
 			while ((machine = brM.readLine()) != null) {
 			    //System.out.println("Mapping   "+machine);
 			    machine="rnobrega@"+machine;
@@ -77,7 +83,7 @@ public class Master10 {
 				p.waitFor();
 				
 				//Copie des fichiers splits
-				String[] copy_data_cmd = {"scp", "-o StrictHostKeyChecking=no", "-r", "-p", "/tmp/rnobrega/splits/S"+String.valueOf(count)+".txt",machine+":/tmp/rnobrega/splits/"};
+				String[] copy_data_cmd = {"scp", "-o StrictHostKeyChecking=no", "-r", "-p", "/cal/homes/rnobrega/syst_rep/splits/S"+String.valueOf(count)+".txt",machine+":/tmp/rnobrega/splits/"};
 				ProcessBuilder pb_copy_data = new ProcessBuilder(copy_data_cmd);
 				pb_copy_data.redirectErrorStream(true);
 				p = pb_copy_data.start();
@@ -98,7 +104,7 @@ public class Master10 {
 	        	
 	        //SHUFFLING
 	        BufferedReader br2;
-			br2 = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
+			br2 = new BufferedReader(new FileReader("/cal/homes/rnobrega/syst_rep/machines.txt"));
 			int countShuf=0;
 			long tempsS =0;
 			System.out.println("SHUFFLING !!!");
@@ -119,7 +125,7 @@ public class Master10 {
 			System.out.println("Shuffling time: "+ (tempsS-0)/1000000);
 			
 	      //PRE-REDUCING
-	        BufferedReader brPR = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));;
+	        BufferedReader brPR = new BufferedReader(new FileReader("/cal/homes/rnobrega/syst_rep/machines.txt"));;
 			int countPRed=0;
 			long tempsP = 0;
 			System.out.println("PREREDUCING !!!");
@@ -141,7 +147,7 @@ public class Master10 {
 			
 	      //REDUCING
 	        BufferedReader brR;
-			brR = new BufferedReader(new FileReader("/tmp/rnobrega/machines.txt"));
+			brR = new BufferedReader(new FileReader("/cal/homes/rnobrega/syst_rep/machines.txt"));
 			int countRed=0;
 			long tempsR = 0;
 			System.out.println("REDUCING !!!");

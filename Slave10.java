@@ -72,6 +72,11 @@ public class Slave10 {
 		}	
 		
 		if (args.length == 0) {	
+			//Creation des dossiers "reduces"
+			ProcessBuilder pb_mkdir_reduces = new ProcessBuilder("mkdir", "-p", "/tmp/rnobrega/reduces/");
+			Process p = pb_mkdir_reduces.start();
+			p.waitFor();
+			
 			//Copie des fichiers shuffles dans shufflesreceived
 			String host = InetAddress.getLocalHost().getHostName();
 			File shuffles_content = new File("/tmp/rnobrega/shuffles/");
@@ -88,38 +93,31 @@ public class Slave10 {
 				p6.waitFor();
 			}
 			
-			//Creation des dossiers "reduces"
-			//String[] create_dir_reduces = {"ssh", "-o StrictHostKeyChecking=no", machine, " mkdir -p /tmp/rnobrega/reduces/"};
-			ProcessBuilder pb_mkdir_reduces = new ProcessBuilder("mkdir", "-p", "/tmp/rnobrega/reduces/");
-			Process p = pb_mkdir_reduces.start();
-			p.waitFor();
 		}
+		
 		if (args.length == 1) {	
 			//Regroupement des fichiers avec le même hash.
 			String lineR;
 			File shrec_cont = new File("/tmp/rnobrega/shufflesreceived/");
 			String list_shrec_cont[] = shrec_cont.list();
-			HashMap<String, HashMap<String,Integer>> H = new HashMap<>();
-			for (int j=0; j < list_shrec_cont.length; j++) {
-				String nom_sh =list_shrec_cont[j];
-				BufferedReader brRec = new BufferedReader(new FileReader("/tmp/rnobrega/shufflesreceived/"+nom_sh));
-				HashMap<String, Integer> temp = new HashMap<>();
+			HashMap<String, Integer> simple = new HashMap<>();
+			for (int i=0; i < list_shrec_cont.length; i ++) {
+				String nom_fichier =list_shrec_cont[i];
+				@SuppressWarnings("resource")
+				BufferedReader brRec = new BufferedReader(new FileReader("/tmp/rnobrega/shufflesreceived/"+nom_fichier));
 				while ((lineR = brRec.readLine()) != null) {
 					String cle = lineR.split(" ")[0];
-					temp.put(cle , (temp.getOrDefault(cle,0)+1));
-					H.put(nom_sh.split("-")[0], temp);
+					simple.put(cle , (simple.getOrDefault(cle,0)+1));
 				}
-				brRec.close();
 			}
-			
 			//Création du fichier avec le résultat de "Reduce"
-			for (Map.Entry<String,HashMap<String, Integer>> e: H.entrySet()) {
-				FileWriter archivo = new FileWriter("/tmp/rnobrega/reduces/"+e.getKey()+".txt", true);
-				PrintWriter writerH = new PrintWriter(archivo);
-				for (Map.Entry<String, Integer> ee : e.getValue().entrySet()) {
-					writerH.println(ee.getKey() + " " + ee.getValue() );
-				}
-				writerH.close();
+			for (Map.Entry<String, Integer> couple : simple.entrySet()){
+				String llave = couple.getKey();
+				int codigo = llave.hashCode();
+				FileWriter archivo = new FileWriter("/tmp/rnobrega/reduces/"+codigo+".txt", true);
+				PrintWriter writerS = new PrintWriter(archivo);
+				writerS.println(llave + " " + couple.getValue() );
+				writerS.close();
 			}
 		}
 	}
